@@ -9,6 +9,7 @@ import {
 import { Formik } from 'formik';
 import * as Yup from 'yup';
 
+import { AuthAPI } from '../../api';
 import { FormikInput, Button, KeyboardAvoidingView } from '../../components';
 
 const schemaRegister = Yup.object().shape({
@@ -32,6 +33,15 @@ export default function Register({ navigation }) {
   const phoneNumberInputRef = useRef();
   const addressInputRef = useRef();
 
+  const handleFormikSubmit = async values => {
+    try {
+      await AuthAPI.register(values);
+      navigation.navigate('Login');
+    } catch (err) {
+      setApiError(err?.response?.data?.message || err.message);
+    }
+  };
+
   return (
     <View style={{ flex: 1 }}>
       <Text style={styles.header}>Register</Text>
@@ -48,12 +58,7 @@ export default function Register({ navigation }) {
               phoneNumber: '',
               address: '',
             }}
-            onSubmit={async values => {
-              return new Promise(resolve => {
-                console.log(values);
-                setTimeout(resolve, 5000);
-              });
-            }}
+            onSubmit={handleFormikSubmit}
           >
             {props => {
               const { handleSubmit, isSubmitting, handleChange } = props;
