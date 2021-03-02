@@ -4,7 +4,7 @@ import { StyleSheet, Text, View, TextInput } from 'react-native';
 export default function FormikInput({
   label,
   name,
-  containerStyle,
+  style,
   inputStyle,
   formikProps,
   ...props
@@ -14,7 +14,7 @@ export default function FormikInput({
   const showError = errors[name] && touched[name];
 
   return (
-    <View style={containerStyle}>
+    <View style={style}>
       <Text>{label}</Text>
       <TextInput
         style={[styles.input, inputStyle]}

@@ -5,22 +5,17 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  KeyboardAvoidingView,
-  Platform,
 } from 'react-native';
 import { Formik } from 'formik';
 
-import { FormikInput, Button } from '../../components';
+import { FormikInput, Button, KeyboardAvoidingView } from '../../components';
 
 export default function Login({ navigation }) {
   return (
     <View style={{ flex: 1 }}>
       <Text>Login</Text>
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : null}
-      >
+      <KeyboardAvoidingView>
         <ScrollView style={{ flex: 1, borderWidth: 2 }}>
           <Formik
             initialValues={{ email: '', password: '' }}
@@ -35,9 +30,16 @@ export default function Login({ navigation }) {
               const { handleSubmit, isSubmitting } = props;
 
               return (
-                <View style={{ flex: 1 }}>
-                  <FormikInput label="Email" name="email" formikProps={props} />
+                <View style={{ flex: 1, paddingHorizontal: 15 }}>
                   <FormikInput
+                    style={styles.input}
+                    label="Email"
+                    name="email"
+                    keyboardType="email-address"
+                    formikProps={props}
+                  />
+                  <FormikInput
+                    style={styles.input}
                     label="Password"
                     name="password"
                     formikProps={props}
@@ -64,4 +66,8 @@ export default function Login({ navigation }) {
   );
 }
 
-const styles = StyleSheet.create({});
+const styles = StyleSheet.create({
+  input: {
+    marginBottom: 20,
+  },
+});
