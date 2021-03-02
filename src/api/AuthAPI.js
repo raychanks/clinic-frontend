@@ -1,10 +1,26 @@
-import axios from 'axios';
+import { publicAxios } from './common';
 
 const login = async (email, password) => {
-  return axios.post('http://localhost:3001/login', {
+  return publicAxios.post('/login', {
     email,
     password,
   });
 };
 
-export { login };
+const register = async ({
+  email,
+  password,
+  clinicName,
+  phoneNumber,
+  address,
+}) => {
+  return publicAxios.post('/register', {
+    name: clinicName,
+    email,
+    password,
+    phoneNumber,
+    address,
+  });
+};
+
+export { login, register };

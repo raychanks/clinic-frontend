@@ -9,7 +9,11 @@ import ConsultationDetail from '../screens/ConsultationDetail';
 
 const Stack = createStackNavigator();
 
-export default function MainStack({ isAuthenticating, isLoggedIn }) {
+export default function MainStack({
+  isAuthenticating,
+  isLoggedIn,
+  setIsLoggedIn,
+}) {
   return (
     <Stack.Navigator initialRouteName="Splash" headerMode="none">
       <Stack.Screen name="Splash">
@@ -35,7 +39,9 @@ export default function MainStack({ isAuthenticating, isLoggedIn }) {
         </>
       ) : (
         <>
-          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Login">
+            {props => <Login setIsLoggedIn={setIsLoggedIn} {...props} />}
+          </Stack.Screen>
           <Stack.Screen name="Register" component={Register} />
         </>
       )}

@@ -3,11 +3,11 @@ import { StyleSheet, View, ActivityIndicator } from 'react-native';
 
 export default function Splash({ navigation, isAuthenticating, isLoggedIn }) {
   const toLoginScreen = () => {
-    navigation.navigate('Login');
+    navigation.replace('Login');
   };
 
   const toMainScreen = () => {
-    navigation.navigate('ConsultationRecords');
+    navigation.replace('ConsultationRecords');
   };
 
   useEffect(() => {

@@ -26,7 +26,7 @@ export default function App() {
   useEffect(() => {
     // only check for existence and expiration date for now
     const checkForToken = async () => {
-      await AsyncStorage.removeItem(STORAGE_TOKEN);
+      // await AsyncStorage.removeItem(STORAGE_TOKEN);
 
       try {
         const token = await AsyncStorage.getItem(STORAGE_TOKEN);
@@ -62,6 +62,7 @@ export default function App() {
           <MainStack
             isAuthenticating={isAuthenticating}
             isLoggedIn={isLoggedIn}
+            setIsLoggedIn={setIsLoggedIn}
           />
         </SafeAreaView>
       </NavigationContainer>

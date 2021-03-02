@@ -19,13 +19,15 @@ const schemaLogin = Yup.object().shape({
   password: Yup.string().required('Required'),
 });
 
-export default function Login({ navigation }) {
+export default function Login({ navigation, setIsLoggedIn }) {
   const [apiError, setApiError] = useState('');
   const passwordInputRef = useRef();
 
   const handleFormikSubmit = async values => {
     try {
       const { data } = await AuthAPI.login(values.email, values.password);
+
+      setIsLoggedIn(true);
       navigation.navigate('ConsultationRecords');
       await AsyncStorage.setItem(STORAGE_TOKEN, data.token);
     } catch (err) {
