@@ -8,8 +8,11 @@ import {
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import RNPickerSelect from 'react-native-picker-select';
+import moment from 'moment';
 
+import { ConsultationAPI } from '../../api';
 import { Row } from '../../components';
+import ConsultationCard from './ConsultationCard';
 
 export default function ConsultationRecords({ navigation }) {
   const [consultations, setConsultations] = useState([]);
@@ -18,8 +21,24 @@ export default function ConsultationRecords({ navigation }) {
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { data } = await ConsultationAPI.getAll();
+
+        setConsultations(data.data);
+        setHasNext(data.totalPages > page);
+        setPage(prev => prev + 1);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
-    <View>
+    <View style={{ flex: 1 }}>
       <Text style={styles.header}>ConsultationRecords</Text>
 
       <Row style={{ paddingHorizontal: 20 }}>
@@ -54,32 +73,21 @@ export default function ConsultationRecords({ navigation }) {
       {isCalendarOpen && <Calendar />}
 
       <FlatList
+        style={{ marginVertical: 16 }}
         contentContainerStyle={{ paddingHorizontal: 20 }}
-        data={[{ key: 'a' }, { key: 'b' }]}
+        data={consultations}
+        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+        keyExtractor={item => item.id.toString()}
         renderItem={({ item }) => {
           return (
-            <TouchableOpacity
-              style={{
-                borderWidth: 2,
-                marginTop: 16,
-                paddingHorizontal: 16,
-                paddingVertical: 8,
-              }}
+            <ConsultationCard
+              doctorName={item.doctorName}
+              patientName={item.patientName}
+              dateTime={moment(item.consultedAt).format(
+                'hh:mm a - DD MMM YYYY',
+              )}
               onPress={() => navigation.navigate('ConsultationDetail')}
-            >
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={{ width: 100 }}>Doctor:</Text>
-                <Text>Name</Text>
-              </View>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={{ width: 100 }}>Patient:</Text>
-                <Text>Name</Text>
-              </View>
-              <View style={{ flexDirection: 'row' }}>
-                <Text style={{ width: 100 }}>Date Time:</Text>
-                <Text>03 Mar 01:39</Text>
-              </View>
-            </TouchableOpacity>
+            />
           );
         }}
       />
