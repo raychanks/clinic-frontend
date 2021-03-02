@@ -1,5 +1,11 @@
 import { protectedAxios } from './common';
 
+const get = async id => {
+  const axios = await protectedAxios();
+
+  return axios.get(`/consultations/${id}`);
+};
+
 const getAll = async ({ page = 1, pageSize = 10 } = {}) => {
   const axios = await protectedAxios();
 
@@ -11,4 +17,4 @@ const getAll = async ({ page = 1, pageSize = 10 } = {}) => {
   });
 };
 
-export { getAll };
+export { get, getAll };

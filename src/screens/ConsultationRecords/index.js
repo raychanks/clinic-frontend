@@ -39,7 +39,7 @@ export default function ConsultationRecords({ navigation }) {
 
   return (
     <View style={{ flex: 1 }}>
-      <Text style={styles.header}>ConsultationRecords</Text>
+      <Text style={styles.header}>Consultation Records</Text>
 
       <Row style={{ paddingHorizontal: 20 }}>
         <View style={{ flex: 1, borderWidth: 1, marginRight: 8 }}>
@@ -86,7 +86,11 @@ export default function ConsultationRecords({ navigation }) {
               dateTime={moment(item.consultedAt).format(
                 'hh:mm a - DD MMM YYYY',
               )}
-              onPress={() => navigation.navigate('ConsultationDetail')}
+              onPress={() =>
+                navigation.navigate('ConsultationDetail', {
+                  id: item.id,
+                })
+              }
             />
           );
         }}

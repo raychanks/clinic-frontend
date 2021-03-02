@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, ActivityIndicator } from 'react-native';
+import { StyleSheet } from 'react-native';
+
+import { FlexCenterSpinner } from '../../components';
 
 export default function Splash({ navigation, isAuthenticating, isLoggedIn }) {
   const toLoginScreen = () => {
@@ -19,16 +21,11 @@ export default function Splash({ navigation, isAuthenticating, isLoggedIn }) {
   });
 
   return (
-    <View
+    <FlexCenterSpinner
       style={{
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
         backgroundColor: 'lightgray',
       }}
-    >
-      <ActivityIndicator color="steelblue" size="large" />
-    </View>
+    />
   );
 }
 
