@@ -37,7 +37,7 @@ export default function Register({ navigation }) {
               const { handleSubmit, isSubmitting } = props;
 
               return (
-                <View style={{ flex: 1, paddingHorizontal: 15 }}>
+                <View style={{ flex: 1, paddingHorizontal: 20 }}>
                   <FormikInput
                     style={styles.input}
                     label="Email"
@@ -90,8 +90,17 @@ export default function Register({ navigation }) {
             }}
           </Formik>
 
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text>Already have an account?</Text>
+          <TouchableOpacity
+            style={{
+              margin: 20,
+              paddingVertical: 12,
+              alignItems: 'center',
+            }}
+            onPress={() => navigation.navigate('Login')}
+          >
+            <Text style={{ textDecorationLine: 'underline', color: '#333' }}>
+              Already have an account?
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>
