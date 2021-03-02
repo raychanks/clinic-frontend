@@ -9,17 +9,36 @@ import ConsultationDetail from '../screens/ConsultationDetail';
 
 const Stack = createStackNavigator();
 
-export default function MainStack() {
+export default function MainStack({ isAuthenticating, isLoggedIn }) {
   return (
-    <Stack.Navigator initialRouteName="Login" headerMode="none">
-      <Stack.Screen name="Splash" component={Splash} />
-      <Stack.Screen name="Login" component={Login} />
-      <Stack.Screen name="Register" component={Register} />
-      <Stack.Screen
-        name="ConsultationRecords"
-        component={ConsultationRecords}
-      />
-      <Stack.Screen name="ConsultationDetail" component={ConsultationDetail} />
+    <Stack.Navigator initialRouteName="Splash" headerMode="none">
+      <Stack.Screen name="Splash">
+        {props => (
+          <Splash
+            isAuthenticating={isAuthenticating}
+            isLoggedIn={isLoggedIn}
+            {...props}
+          />
+        )}
+      </Stack.Screen>
+
+      {isLoggedIn ? (
+        <>
+          <Stack.Screen
+            name="ConsultationRecords"
+            component={ConsultationRecords}
+          />
+          <Stack.Screen
+            name="ConsultationDetail"
+            component={ConsultationDetail}
+          />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="Login" component={Login} />
+          <Stack.Screen name="Register" component={Register} />
+        </>
+      )}
     </Stack.Navigator>
   );
 }

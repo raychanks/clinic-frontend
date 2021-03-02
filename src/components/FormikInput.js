@@ -30,8 +30,11 @@ export default function FormikInput({
 const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: '#999',
+    borderRadius: 8,
     height: 44,
     paddingHorizontal: 16,
+    marginTop: 8,
+    marginBottom: 4,
   },
 });

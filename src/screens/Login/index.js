@@ -7,9 +7,11 @@ import {
   ScrollView,
 } from 'react-native';
 import { Formik } from 'formik';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { FormikInput, Button, KeyboardAvoidingView } from '../../components';
 import { AuthAPI } from '../../api';
+import { STORAGE_TOKEN } from '../../shared/constants';
 
 export default function Login({ navigation }) {
   const [apiError, setApiError] = useState('');
@@ -18,19 +20,18 @@ export default function Login({ navigation }) {
     try {
       const { data } = await AuthAPI.login(values.email, values.password);
       navigation.navigate('ConsultationRecords');
-      console.log({ token: data.token });
-      // TODO: setToken
+      await AsyncStorage.setItem(STORAGE_TOKEN, data.token);
     } catch (err) {
-      setApiError(err?.response?.data?.message);
+      setApiError(err?.response?.data?.message || err.message);
     }
   };
 
   return (
     <View style={{ flex: 1 }}>
-      <Text>Login</Text>
+      <Text style={styles.header}>Login</Text>
 
       <KeyboardAvoidingView>
-        <ScrollView style={{ flex: 1, borderWidth: 2 }}>
+        <ScrollView style={{ flex: 1 }}>
           <Formik
             initialValues={{ email: '', password: '' }}
             onSubmit={handleFormikSubmit}
@@ -89,6 +90,11 @@ export default function Login({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    fontSize: 32,
+    color: '#333',
+    margin: 20,
+  },
   input: {
     marginBottom: 20,
   },

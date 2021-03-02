@@ -1,10 +1,33 @@
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, ActivityIndicator } from 'react-native';
 
-export default function Splash() {
+export default function Splash({ navigation, isAuthenticating, isLoggedIn }) {
+  const toLoginScreen = () => {
+    navigation.navigate('Login');
+  };
+
+  const toMainScreen = () => {
+    navigation.navigate('ConsultationRecords');
+  };
+
+  useEffect(() => {
+    if (isAuthenticating) {
+      return;
+    }
+
+    isLoggedIn ? toMainScreen() : toLoginScreen();
+  });
+
   return (
-    <View>
-      <Text>Splash</Text>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: 'lightgray',
+      }}
+    >
+      <ActivityIndicator color="steelblue" size="large" />
     </View>
   );
 }

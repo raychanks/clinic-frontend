@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -11,12 +11,14 @@ import { Formik } from 'formik';
 import { FormikInput, Button, KeyboardAvoidingView } from '../../components';
 
 export default function Register({ navigation }) {
+  const [apiError, setApiError] = useState('');
+
   return (
     <View style={{ flex: 1 }}>
-      <Text>Register</Text>
+      <Text style={styles.header}>Register</Text>
 
       <KeyboardAvoidingView>
-        <ScrollView style={{ flex: 1, borderWidth: 2 }}>
+        <ScrollView style={{ flex: 1 }}>
           <Formik
             initialValues={{
               email: '',
@@ -26,7 +28,7 @@ export default function Register({ navigation }) {
               phoneNumber: '',
               address: '',
             }}
-            onSubmit={async (values, actions) => {
+            onSubmit={async values => {
               return new Promise(resolve => {
                 console.log(values);
                 setTimeout(resolve, 5000);
@@ -79,12 +81,16 @@ export default function Register({ navigation }) {
                     formikProps={props}
                   />
 
-                  <Button
-                    style={{ width: '70%', marginLeft: '15%' }}
-                    text="REGISTER"
-                    disabled={isSubmitting}
-                    onPress={handleSubmit}
-                  />
+                  <View>
+                    <Button
+                      text="REGISTER"
+                      disabled={isSubmitting}
+                      onPress={handleSubmit}
+                    />
+                    {apiError ? (
+                      <Text style={{ color: 'crimson' }}>{apiError}</Text>
+                    ) : null}
+                  </View>
                 </View>
               );
             }}
@@ -109,6 +115,11 @@ export default function Register({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+  header: {
+    fontSize: 32,
+    color: '#333',
+    margin: 20,
+  },
   input: {
     marginBottom: 20,
   },
