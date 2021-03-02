@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -7,11 +7,30 @@ import {
   ScrollView,
 } from 'react-native';
 import { Formik } from 'formik';
+import * as Yup from 'yup';
 
 import { FormikInput, Button, KeyboardAvoidingView } from '../../components';
 
+const schemaRegister = Yup.object().shape({
+  email: Yup.string().email('Invalid email').required('Required'),
+  password: Yup.string().required('Required'),
+  passwordRepeat: Yup.string()
+    .required('Required')
+    .test('passwords-match', 'Passwords not match', function (value) {
+      return this.parent.password === value;
+    }),
+  clinicName: Yup.string().required('Required'),
+  phoneNumber: Yup.string().required('Required'),
+  address: Yup.string().required('Required'),
+});
+
 export default function Register({ navigation }) {
   const [apiError, setApiError] = useState('');
+  const passwordInputRef = useRef();
+  const passwordRepeatInputRef = useRef();
+  const clinicNameInputRef = useRef();
+  const phoneNumberInputRef = useRef();
+  const addressInputRef = useRef();
 
   return (
     <View style={{ flex: 1 }}>
@@ -20,11 +39,12 @@ export default function Register({ navigation }) {
       <KeyboardAvoidingView>
         <ScrollView style={{ flex: 1 }}>
           <Formik
+            validationSchema={schemaRegister}
             initialValues={{
               email: '',
               password: '',
               passwordRepeat: '',
-              name: '',
+              clinicName: '',
               phoneNumber: '',
               address: '',
             }}
@@ -36,7 +56,16 @@ export default function Register({ navigation }) {
             }}
           >
             {props => {
-              const { handleSubmit, isSubmitting } = props;
+              const { handleSubmit, isSubmitting, handleChange } = props;
+              const handleChangeText = fieldName => event => {
+                setApiError(false);
+                handleChange(fieldName)(event);
+              };
+              const focusNextInput = inputRef => {
+                if (inputRef.current) {
+                  inputRef.current.focus();
+                }
+              };
 
               return (
                 <View style={{ flex: 1, paddingHorizontal: 20 }}>
@@ -45,40 +74,70 @@ export default function Register({ navigation }) {
                     label="Email"
                     name="email"
                     keyboardType="email-address"
+                    returnKeyType="next"
                     formikProps={props}
+                    blurOnSubmit={false}
+                    onChangeText={handleChangeText('email')}
+                    onSubmitEditing={() => focusNextInput(passwordInputRef)}
                   />
                   <FormikInput
+                    ref={passwordInputRef}
                     style={styles.input}
                     label="Password"
                     name="password"
+                    returnKeyType="next"
                     formikProps={props}
                     secureTextEntry
+                    blurOnSubmit={false}
+                    onChangeText={handleChangeText('password')}
+                    onSubmitEditing={() =>
+                      focusNextInput(passwordRepeatInputRef)
+                    }
                   />
                   <FormikInput
+                    ref={passwordRepeatInputRef}
                     style={styles.input}
                     label="Password Repeat"
                     name="passwordRepeat"
+                    returnKeyType="next"
                     formikProps={props}
                     secureTextEntry
+                    blurOnSubmit={false}
+                    onChangeText={handleChangeText('passwordRepeat')}
+                    onSubmitEditing={() => focusNextInput(clinicNameInputRef)}
                   />
                   <FormikInput
+                    ref={clinicNameInputRef}
                     style={styles.input}
                     label="Clinic Name"
-                    name="name"
+                    name="clinicName"
+                    returnKeyType="next"
                     formikProps={props}
+                    blurOnSubmit={false}
+                    onChangeText={handleChangeText('clinicName')}
+                    onSubmitEditing={() => focusNextInput(phoneNumberInputRef)}
                   />
                   <FormikInput
+                    ref={phoneNumberInputRef}
                     style={styles.input}
                     label="Phone Number"
                     name="phoneNumber"
                     keyboardType="phone-pad"
+                    returnKeyType="next"
                     formikProps={props}
+                    blurOnSubmit={false}
+                    onChangeText={handleChangeText('phoneNumber')}
+                    onSubmitEditing={() => focusNextInput(addressInputRef)}
                   />
                   <FormikInput
+                    ref={addressInputRef}
                     style={styles.input}
                     label="Address"
                     name="address"
+                    returnKeyType="done"
                     formikProps={props}
+                    onChangeText={handleChangeText('address')}
+                    onSubmitEditing={handleSubmit}
                   />
 
                   <View>
