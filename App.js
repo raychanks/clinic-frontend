@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { STORAGE_TOKEN } from './src/shared/constants';
 import MainStack from './src/navigation';
+import { AuthAPI } from './src/api';
 
 export default function App() {
   const [isAuthenticating, setIsAuthenticating] = useState(true);
@@ -24,10 +25,7 @@ export default function App() {
   };
 
   useEffect(() => {
-    // only check for existence and expiration date for now
     const checkForToken = async () => {
-      // await AsyncStorage.removeItem(STORAGE_TOKEN);
-
       try {
         const token = await AsyncStorage.getItem(STORAGE_TOKEN);
 
@@ -44,7 +42,9 @@ export default function App() {
           return;
         }
 
-        authenticationSuccess();
+        const isTokenValid = await AuthAPI.verify(token);
+
+        isTokenValid ? authenticationSuccess() : authenticationFailed();
       } catch (e) {
         authenticationFailed();
       }

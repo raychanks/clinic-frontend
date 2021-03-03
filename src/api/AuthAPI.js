@@ -23,4 +23,12 @@ const register = async ({
   });
 };
 
-export { login, register };
+const verify = async token => {
+  return publicAxios.get('/auth/verify', {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+};
+
+export { login, register, verify };
