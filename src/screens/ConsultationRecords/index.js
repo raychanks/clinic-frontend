@@ -1,24 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import {
-  StyleSheet,
-  Text,
-  View,
-  TouchableOpacity,
-  FlatList,
-  Modal,
-  ActivityIndicator,
-} from 'react-native';
-import { Calendar } from 'react-native-calendars';
-import RNPickerSelect from 'react-native-picker-select';
+import { StyleSheet, Text, View } from 'react-native';
 import moment from 'moment';
 
 import { ConsultationAPI } from '../../api';
-import { FlexCenterSpinner, Row } from '../../components';
-import ConsultationCard from './ConsultationCard';
+import { Row } from '../../components';
+import CalendarModalView from './CalendarModalView';
+import TimeFramePicker from './TimeFramePicker';
+import DateTimeButton from './DateTimeButton';
+import RecordList from './RecordList';
 
 const DATE_TIME_FORMAT = 'DD MMM YY';
 
-export default function ConsultationRecords({ navigation }) {
+export default function ConsultationRecords() {
   const [consultations, setConsultations] = useState([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(true);
@@ -76,6 +69,10 @@ export default function ConsultationRecords({ navigation }) {
     return { from, to };
   };
 
+  const toggleCalendar = () => {
+    setIsCalendarOpen(isOpen => !isOpen);
+  };
+
   const handlePickerValueChange = value => {
     setSelectedTimeFrame(value);
   };
@@ -105,113 +102,30 @@ export default function ConsultationRecords({ navigation }) {
       <Text style={styles.header}>Consultation Records</Text>
 
       <Row style={{ paddingHorizontal: 20, flexGrow: 0 }}>
-        <View
-          style={{
-            flex: 1,
-            borderWidth: 1,
-            borderColor: '#999',
-            marginRight: 8,
-          }}
-        >
-          <View style={{ paddingHorizontal: 12 }}>
-            <RNPickerSelect
-              onValueChange={handlePickerValueChange}
-              style={pickerSelectStyles}
-              value={selectedTimeFrame}
-              placeholder={{}}
-              items={[
-                { label: 'Daily', value: 'daily' },
-                { label: 'Weekly', value: 'weekly' },
-                { label: 'Monthly', value: 'monthly' },
-              ]}
-            />
-          </View>
-        </View>
+        <TimeFramePicker
+          value={selectedTimeFrame}
+          onValueChange={handlePickerValueChange}
+        />
 
-        <TouchableOpacity
-          style={{
-            borderWidth: 1,
-            borderColor: '#999',
-            flex: 1,
-            marginLeft: 8,
-            alignSelf: 'stretch',
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-          onPress={() => {
-            setIsCalendarOpen(isOpen => !isOpen);
-          }}
-        >
-          <Text>{getDateTimeDisplay()}</Text>
-        </TouchableOpacity>
+        <DateTimeButton text={getDateTimeDisplay()} onPress={toggleCalendar} />
       </Row>
 
-      {isLoading ? (
-        <FlexCenterSpinner />
-      ) : (
-        <FlatList
-          style={{ marginVertical: 16 }}
-          contentContainerStyle={{ paddingHorizontal: 20 }}
-          data={consultations}
-          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-          ListEmptyComponent={() => <Text>No Records</Text>}
-          ListFooterComponent={() =>
-            hasNext && <ActivityIndicator size="large" color="steelblue" />
-          }
-          onEndReached={handleEndReached}
-          keyExtractor={item => item.id.toString()}
-          renderItem={({ item }) => {
-            return (
-              <ConsultationCard
-                doctorName={item.doctorName}
-                patientName={item.patientName}
-                dateTime={moment(item.consultedAt).format(
-                  'hh:mm a - DD MMM YYYY',
-                )}
-                onPress={() =>
-                  navigation.navigate('ConsultationDetail', {
-                    id: item.id,
-                  })
-                }
-              />
-            );
-          }}
-        />
-      )}
+      <RecordList
+        isLoading={isLoading}
+        data={consultations}
+        hasNext={hasNext}
+        onEndReached={handleEndReached}
+      />
 
-      <Modal
-        animationType="fade"
-        transparent
-        visible={isCalendarOpen}
-        onDismiss={() => {
+      <CalendarModalView
+        isOpen={isCalendarOpen}
+        current={moment(selectedDateTime).format('YYYY-MM-DD')}
+        onClose={() => setIsCalendarOpen(false)}
+        onDayPress={day => {
+          setSelectedDateTime(moment(day.timestamp));
           setIsCalendarOpen(false);
         }}
-        onRequestClose={() => {
-          setIsCalendarOpen(false);
-        }}
-      >
-        <TouchableOpacity
-          style={{ backgroundColor: '#0005', flex: 1 }}
-          activeOpacity={1}
-          onPress={() => setIsCalendarOpen(false)}
-        >
-          <TouchableOpacity activeOpacity={1}>
-            <Calendar
-              current={moment(selectedDateTime).format('YYYY-MM-DD')}
-              markedDates={{
-                [moment(selectedDateTime).format('YYYY-MM-DD')]: {
-                  selected: true,
-                  selectedColor: 'steelblue',
-                },
-              }}
-              onDayPress={day => {
-                setSelectedDateTime(moment(day.timestamp));
-                setIsCalendarOpen(false);
-              }}
-            />
-          </TouchableOpacity>
-        </TouchableOpacity>
-      </Modal>
+      />
     </View>
   );
 }
@@ -221,20 +135,5 @@ const styles = StyleSheet.create({
     fontSize: 32,
     color: '#333',
     margin: 20,
-  },
-});
-
-const pickerSelectStyles = StyleSheet.create({
-  inputIOS: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 12,
-    color: 'black',
-  },
-  inputAndroid: {
-    fontSize: 16,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    color: 'black',
   },
 });
