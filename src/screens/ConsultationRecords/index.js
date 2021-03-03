@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
+  ActivityIndicator,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import RNPickerSelect from 'react-native-picker-select';
@@ -48,19 +49,16 @@ export default function ConsultationRecords({ navigation }) {
     return moment(selectedDateTime).format(DATE_TIME_FORMAT);
   };
 
-  const fetchData = useCallback(async ({ from, to } = {}) => {
+  const fetchData = useCallback(async ({ from, to, page } = {}) => {
     try {
-      setIsLoading(true);
-      const { data } = await ConsultationAPI.getAll({ from, to });
+      const { data } = await ConsultationAPI.getAll({ from, to, page });
 
-      setConsultations(data.data);
+      setConsultations(prev => [...prev, ...data.data]);
       setHasNext(data.totalPages > data.page);
       setPage(data.page + 1);
     } catch (err) {
       console.log(err);
     }
-
-    setIsLoading(false);
   }, []);
 
   const getTimeInterval = (timeframe, dateTime) => {
@@ -80,12 +78,27 @@ export default function ConsultationRecords({ navigation }) {
 
   const handlePickerValueChange = value => {
     setSelectedTimeFrame(value);
-    fetchData(getTimeInterval(value, selectedDateTime));
+  };
+
+  const handleEndReached = () => {
+    if (!hasNext) {
+      return;
+    }
+
+    fetchData({
+      ...getTimeInterval(selectedTimeFrame, selectedDateTime),
+      page,
+    });
   };
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    (async () => {
+      setConsultations([]);
+      setIsLoading(true);
+      await fetchData(getTimeInterval(selectedTimeFrame, selectedDateTime));
+      setIsLoading(false);
+    })();
+  }, [fetchData, selectedDateTime, selectedTimeFrame]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -142,6 +155,10 @@ export default function ConsultationRecords({ navigation }) {
           data={consultations}
           ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
           ListEmptyComponent={() => <Text>No Records</Text>}
+          ListFooterComponent={() =>
+            hasNext && <ActivityIndicator size="large" color="steelblue" />
+          }
+          onEndReached={handleEndReached}
           keyExtractor={item => item.id.toString()}
           renderItem={({ item }) => {
             return (
@@ -190,9 +207,6 @@ export default function ConsultationRecords({ navigation }) {
               onDayPress={day => {
                 setSelectedDateTime(moment(day.timestamp));
                 setIsCalendarOpen(false);
-                fetchData(
-                  getTimeInterval(selectedTimeFrame, moment(day.timestamp)),
-                );
               }}
             />
           </TouchableOpacity>
