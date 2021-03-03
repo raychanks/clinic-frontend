@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,7 +12,7 @@ import RNPickerSelect from 'react-native-picker-select';
 import moment from 'moment';
 
 import { ConsultationAPI } from '../../api';
-import { Row } from '../../components';
+import { FlexCenterSpinner, Row } from '../../components';
 import ConsultationCard from './ConsultationCard';
 
 const DATE_TIME_FORMAT = 'DD MMM YY';
@@ -21,28 +21,71 @@ export default function ConsultationRecords({ navigation }) {
   const [consultations, setConsultations] = useState([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
-  const [selectedDateTime, setSelectedDateTime] = useState(
-    moment().format(DATE_TIME_FORMAT),
-  );
+  const [selectedDateTime, setSelectedDateTime] = useState(moment());
+
+  const getDateTimeDisplay = () => {
+    if (selectedTimeFrame === 'daily') {
+      return moment(selectedDateTime).format(DATE_TIME_FORMAT);
+    }
+    if (selectedTimeFrame === 'weekly') {
+      const weekSunday = moment(selectedDateTime)
+        .isoWeekday(0)
+        .format(DATE_TIME_FORMAT);
+      const weekSaturday = moment(selectedDateTime)
+        .isoWeekday(6)
+        .format(DATE_TIME_FORMAT);
+
+      return `${weekSunday} - ${weekSaturday}`;
+    }
+    if (selectedTimeFrame === 'monthly') {
+      return moment(selectedDateTime).format('MMMM');
+    }
+
+    return moment(selectedDateTime).format(DATE_TIME_FORMAT);
+  };
+
+  const fetchData = useCallback(async ({ from, to } = {}) => {
+    try {
+      setIsLoading(true);
+      const { data } = await ConsultationAPI.getAll({ from, to });
+
+      setConsultations(data.data);
+      setHasNext(data.totalPages > data.page);
+      setPage(data.page + 1);
+    } catch (err) {
+      console.log(err);
+    }
+
+    setIsLoading(false);
+  }, []);
+
+  const getTimeInterval = (timeframe, dateTime) => {
+    let from = moment(dateTime).toISOString();
+    let to = moment(dateTime).add(1, 'day').toISOString();
+
+    if (timeframe === 'weekly') {
+      from = moment(dateTime).isoWeekday(0).toISOString();
+      to = moment(dateTime).isoWeekday(6).add(1, 'day').toISOString();
+    } else if (timeframe === 'monthly') {
+      from = moment(dateTime).startOf('month').toISOString();
+      to = moment(dateTime).endOf('month').add(1, 'day').toISOString();
+    }
+
+    return { from, to };
+  };
+
+  const handlePickerValueChange = value => {
+    setSelectedTimeFrame(value);
+    fetchData(getTimeInterval(value, selectedDateTime));
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const { data } = await ConsultationAPI.getAll();
-
-        setConsultations(data.data);
-        setHasNext(data.totalPages > data.page);
-        setPage(data.page + 1);
-      } catch (err) {
-        console.log(err);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [fetchData]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -59,7 +102,7 @@ export default function ConsultationRecords({ navigation }) {
         >
           <View style={{ paddingHorizontal: 12 }}>
             <RNPickerSelect
-              onValueChange={setSelectedTimeFrame}
+              onValueChange={handlePickerValueChange}
               style={pickerSelectStyles}
               value={selectedTimeFrame}
               placeholder={{}}
@@ -86,35 +129,38 @@ export default function ConsultationRecords({ navigation }) {
             setIsCalendarOpen(isOpen => !isOpen);
           }}
         >
-          <Text>
-            {selectedDateTime} - {selectedDateTime}
-          </Text>
+          <Text>{getDateTimeDisplay()}</Text>
         </TouchableOpacity>
       </Row>
 
-      <FlatList
-        style={{ marginVertical: 16 }}
-        contentContainerStyle={{ paddingHorizontal: 20 }}
-        data={consultations}
-        ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
-        keyExtractor={item => item.id.toString()}
-        renderItem={({ item }) => {
-          return (
-            <ConsultationCard
-              doctorName={item.doctorName}
-              patientName={item.patientName}
-              dateTime={moment(item.consultedAt).format(
-                'hh:mm a - DD MMM YYYY',
-              )}
-              onPress={() =>
-                navigation.navigate('ConsultationDetail', {
-                  id: item.id,
-                })
-              }
-            />
-          );
-        }}
-      />
+      {isLoading ? (
+        <FlexCenterSpinner />
+      ) : (
+        <FlatList
+          style={{ marginVertical: 16 }}
+          contentContainerStyle={{ paddingHorizontal: 20 }}
+          data={consultations}
+          ItemSeparatorComponent={() => <View style={{ height: 16 }} />}
+          ListEmptyComponent={() => <Text>No Records</Text>}
+          keyExtractor={item => item.id.toString()}
+          renderItem={({ item }) => {
+            return (
+              <ConsultationCard
+                doctorName={item.doctorName}
+                patientName={item.patientName}
+                dateTime={moment(item.consultedAt).format(
+                  'hh:mm a - DD MMM YYYY',
+                )}
+                onPress={() =>
+                  navigation.navigate('ConsultationDetail', {
+                    id: item.id,
+                  })
+                }
+              />
+            );
+          }}
+        />
+      )}
 
       <Modal
         animationType="fade"
@@ -134,12 +180,19 @@ export default function ConsultationRecords({ navigation }) {
         >
           <TouchableOpacity activeOpacity={1}>
             <Calendar
+              current={moment(selectedDateTime).format('YYYY-MM-DD')}
+              markedDates={{
+                [moment(selectedDateTime).format('YYYY-MM-DD')]: {
+                  selected: true,
+                  selectedColor: 'steelblue',
+                },
+              }}
               onDayPress={day => {
-                console.log('selected day', day);
-                setSelectedDateTime(
-                  moment(day.timestamp).format(DATE_TIME_FORMAT),
-                );
+                setSelectedDateTime(moment(day.timestamp));
                 setIsCalendarOpen(false);
+                fetchData(
+                  getTimeInterval(selectedTimeFrame, moment(day.timestamp)),
+                );
               }}
             />
           </TouchableOpacity>
