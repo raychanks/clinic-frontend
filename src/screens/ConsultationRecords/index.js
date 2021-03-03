@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import moment from 'moment';
 
+import { DAILY, WEEKLY, MONTHLY } from '../../shared/constants';
 import { ConsultationAPI } from '../../api';
 import { Row } from '../../components';
 import CalendarModalView from './CalendarModalView';
@@ -16,16 +17,16 @@ export default function ConsultationRecords() {
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
-
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState(DAILY);
   const [selectedDateTime, setSelectedDateTime] = useState(moment());
 
   const getDateTimeDisplay = () => {
-    if (selectedTimeFrame === 'daily') {
+    if (selectedTimeFrame === DAILY) {
       return moment(selectedDateTime).format(DATE_TIME_FORMAT);
     }
-    if (selectedTimeFrame === 'weekly') {
+
+    if (selectedTimeFrame === WEEKLY) {
       const weekSunday = moment(selectedDateTime)
         .isoWeekday(0)
         .format(DATE_TIME_FORMAT);
@@ -35,7 +36,8 @@ export default function ConsultationRecords() {
 
       return `${weekSunday} - ${weekSaturday}`;
     }
-    if (selectedTimeFrame === 'monthly') {
+
+    if (selectedTimeFrame === MONTHLY) {
       return moment(selectedDateTime).format('MMMM');
     }
 
@@ -58,10 +60,10 @@ export default function ConsultationRecords() {
     let from = moment(dateTime).toISOString();
     let to = moment(dateTime).add(1, 'day').toISOString();
 
-    if (timeframe === 'weekly') {
+    if (timeframe === WEEKLY) {
       from = moment(dateTime).isoWeekday(0).toISOString();
       to = moment(dateTime).isoWeekday(6).add(1, 'day').toISOString();
-    } else if (timeframe === 'monthly') {
+    } else if (timeframe === MONTHLY) {
       from = moment(dateTime).startOf('month').toISOString();
       to = moment(dateTime).endOf('month').add(1, 'day').toISOString();
     }

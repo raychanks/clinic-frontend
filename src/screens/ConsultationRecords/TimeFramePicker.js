@@ -2,6 +2,8 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 
+import { DAILY, WEEKLY, MONTHLY } from '../../shared/constants';
+
 export default function TimeFramePicker({ value, onValueChange }) {
   return (
     <View
@@ -17,9 +19,9 @@ export default function TimeFramePicker({ value, onValueChange }) {
           style={pickerSelectStyles}
           placeholder={{}}
           items={[
-            { label: 'Daily', value: 'daily' },
-            { label: 'Weekly', value: 'weekly' },
-            { label: 'Monthly', value: 'monthly' },
+            { label: 'Daily', value: DAILY },
+            { label: 'Weekly', value: WEEKLY },
+            { label: 'Monthly', value: MONTHLY },
           ]}
           value={value}
           onValueChange={onValueChange}
