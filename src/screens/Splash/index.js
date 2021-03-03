@@ -20,13 +20,7 @@ export default function Splash({ navigation, isAuthenticating, isLoggedIn }) {
     isLoggedIn ? toMainScreen() : toLoginScreen();
   });
 
-  return (
-    <FlexCenterSpinner
-      style={{
-        backgroundColor: 'lightgray',
-      }}
-    />
-  );
+  return <FlexCenterSpinner style={{ backgroundColor: 'lightgray' }} />;
 }
 
 const styles = StyleSheet.create({});

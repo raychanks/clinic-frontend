@@ -5,6 +5,7 @@ import {
   View,
   TouchableOpacity,
   FlatList,
+  Modal,
 } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import RNPickerSelect from 'react-native-picker-select';
@@ -14,12 +15,18 @@ import { ConsultationAPI } from '../../api';
 import { Row } from '../../components';
 import ConsultationCard from './ConsultationCard';
 
+const DATE_TIME_FORMAT = 'DD MMM YY';
+
 export default function ConsultationRecords({ navigation }) {
   const [consultations, setConsultations] = useState([]);
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(true);
 
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedTimeFrame, setSelectedTimeFrame] = useState('daily');
+  const [selectedDateTime, setSelectedDateTime] = useState(
+    moment().format(DATE_TIME_FORMAT),
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,8 +34,8 @@ export default function ConsultationRecords({ navigation }) {
         const { data } = await ConsultationAPI.getAll();
 
         setConsultations(data.data);
-        setHasNext(data.totalPages > page);
-        setPage(prev => prev + 1);
+        setHasNext(data.totalPages > data.page);
+        setPage(data.page + 1);
       } catch (err) {
         console.log(err);
       }
@@ -41,21 +48,34 @@ export default function ConsultationRecords({ navigation }) {
     <View style={{ flex: 1 }}>
       <Text style={styles.header}>Consultation Records</Text>
 
-      <Row style={{ paddingHorizontal: 20 }}>
-        <View style={{ flex: 1, borderWidth: 1, marginRight: 8 }}>
-          <RNPickerSelect
-            onValueChange={value => console.log(value)}
-            style={pickerSelectStyles}
-            items={[
-              { label: 'Football', value: 'football' },
-              { label: 'Baseball', value: 'baseball' },
-              { label: 'Hockey', value: 'hockey' },
-            ]}
-          />
+      <Row style={{ paddingHorizontal: 20, flexGrow: 0 }}>
+        <View
+          style={{
+            flex: 1,
+            borderWidth: 1,
+            borderColor: '#999',
+            marginRight: 8,
+          }}
+        >
+          <View style={{ paddingHorizontal: 12 }}>
+            <RNPickerSelect
+              onValueChange={setSelectedTimeFrame}
+              style={pickerSelectStyles}
+              value={selectedTimeFrame}
+              placeholder={{}}
+              items={[
+                { label: 'Daily', value: 'daily' },
+                { label: 'Weekly', value: 'weekly' },
+                { label: 'Monthly', value: 'monthly' },
+              ]}
+            />
+          </View>
         </View>
+
         <TouchableOpacity
           style={{
             borderWidth: 1,
+            borderColor: '#999',
             flex: 1,
             marginLeft: 8,
             alignSelf: 'stretch',
@@ -66,11 +86,11 @@ export default function ConsultationRecords({ navigation }) {
             setIsCalendarOpen(isOpen => !isOpen);
           }}
         >
-          <Text>January</Text>
+          <Text>
+            {selectedDateTime} - {selectedDateTime}
+          </Text>
         </TouchableOpacity>
       </Row>
-
-      {isCalendarOpen && <Calendar />}
 
       <FlatList
         style={{ marginVertical: 16 }}
@@ -95,6 +115,36 @@ export default function ConsultationRecords({ navigation }) {
           );
         }}
       />
+
+      <Modal
+        animationType="fade"
+        transparent
+        visible={isCalendarOpen}
+        onDismiss={() => {
+          setIsCalendarOpen(false);
+        }}
+        onRequestClose={() => {
+          setIsCalendarOpen(false);
+        }}
+      >
+        <TouchableOpacity
+          style={{ backgroundColor: '#0005', flex: 1 }}
+          activeOpacity={1}
+          onPress={() => setIsCalendarOpen(false)}
+        >
+          <TouchableOpacity activeOpacity={1}>
+            <Calendar
+              onDayPress={day => {
+                console.log('selected day', day);
+                setSelectedDateTime(
+                  moment(day.timestamp).format(DATE_TIME_FORMAT),
+                );
+                setIsCalendarOpen(false);
+              }}
+            />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
     </View>
   );
 }
@@ -110,8 +160,8 @@ const styles = StyleSheet.create({
 const pickerSelectStyles = StyleSheet.create({
   inputIOS: {
     fontSize: 16,
-    paddingVertical: 12,
     paddingHorizontal: 10,
+    paddingVertical: 12,
     color: 'black',
   },
   inputAndroid: {
